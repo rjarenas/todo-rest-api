@@ -1,12 +1,7 @@
 const Pool = require('pg').Pool;
+const { DATABASE_CONNECTION  } = require('../database-connection');
 
-const pool = new Pool({
-  user: 'todo_user',
-  host: 'localhost',
-  database: 'postgres',
-  password: 'root',
-  port: 5432,
-});
+const pool = new Pool(DATABASE_CONNECTION);
 
 const getTasks = (request, response) => {
   pool.query('SELECT * FROM tasks ORDER BY task_id ASC;', (error, results) => {
