@@ -2,9 +2,12 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const cors = require('cors');
-const port = 3001;
 
-const db = require('./taskRouter');
+//Set the port for local dev OR heroku
+const port =  process.env.PORT || 3001;
+
+//Routes
+const tasks = require('./routes/tasks');
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -15,13 +18,15 @@ app.use(
 );
 
 app.get('/', (request, response) => {
-  response.json({ info: 'Node.js, Express, and Postgres API' })
+  response.json({ info: 'Todo Rest API' })
 })
 
-app.get('/tasks', db.getTasks);
-app.post('/tasks', db.createTask);
-app.put('/tasks/:id', db.updateTask);
+//Entry points
+app.get('/tasks', tasks.getTasks);
+app.post('/tasks', tasks.createTask);
+app.patch('/tasks/:id', tasks.updateTaskCompletion);
+app.delete('/tasks/:id', tasks.deleteTask);
 
 app.listen(port, () => {
-  console.log(`App running on port ${port}.`);
+  console.log(`Todo Rest API running on port ${port}.`);
 })
