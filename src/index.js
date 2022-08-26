@@ -23,8 +23,8 @@ app.get('/', (request, response) => {
 })
 
 //Task entry points
-app.get('/tasks', tasks.getTasks);
-app.post('/tasks', tasks.createTask);
+app.get('/user/:id/tasks', tasks.getUserTasks);
+app.post('/user/:id/tasks', tasks.createUserTask);
 app.patch('/tasks/:id', tasks.updateTaskCompletion);
 app.delete('/tasks/:id', tasks.deleteTask);
 
