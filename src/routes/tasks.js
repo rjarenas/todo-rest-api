@@ -3,8 +3,10 @@ const { DATABASE_CONNECTION  } = require('../database-connection');
 
 const pool = new Pool(DATABASE_CONNECTION);
 
-const getTasks = (request, response) => {
-  pool.query('SELECT * FROM tasks ORDER BY task_id ASC;', (error, results) => {
+const getUserTasks = (request, response) => {
+  const user_id = parseInt(request.params.id);
+
+  pool.query('SELECT b.* FROM users a LEFT JOIN tasks b ON b.task_id = ANY(a.tasks) WHERE a.user_id = $1;',[user_id], (error, results) => {
     if(error) {
       throw error;
     }
@@ -13,10 +15,13 @@ const getTasks = (request, response) => {
   });
 }
 
-const createTask = (request, response) => {
-  const { description, complete, user_id } = request.body;
+const createUserTask = (request, response) => {
+  const user_id = parseInt(request.params.id);
+  const { description, complete } = request.body;
 
-  pool.query('INSERT INTO tasks (description, complete, user_id) VALUES ($1, $2, $3) RETURNING *;', [description, complete, user_id], (error, results) => {
+  pool.query(`WITH new_task as (INSERT INTO tasks (description, complete) VALUES ($1, $2) RETURNING task_id) 
+    UPDATE users SET tasks = tasks || ARRAY(SELECT task_id FROM new_task)
+    WHERE user_id = $3 RETURNING (SELECT task_id FROM new_task);`, [description, complete, user_id], (error, results) => {
     if (error) {
       throw error;
     }
@@ -39,17 +44,23 @@ const updateTaskCompletion = (request, response) => {
 const deleteTask = (request, response) => {
   const task_id = parseInt(request.params.id);
 
-  pool.query('DELETE FROM tasks WHERE task_id = $1;', [id], (error, results) => {
+  pool.query('DELETE FROM tasks WHERE task_id = $1;', [task_id], (error, results) => {
     if (error) {
       throw error;
     }
-    response.status(200).send(`Task delete with ID ${task_id}`);
+    pool.query('UPDATE users SET tasks = ARRAY_REMOVE(tasks,$1)',[task_id], (error, results) => {
+      if(error) {
+        throw error;
+      }
+    })
+
+    response.status(200).send(`Task deleted with ID ${task_id}`);
   });
 }
 
 module.exports = {
-  getTasks,
-  createTask,
+  getUserTasks,
+  createUserTask,
   updateTaskCompletion,
   deleteTask
 }
