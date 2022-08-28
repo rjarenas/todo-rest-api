@@ -25,7 +25,7 @@ const createUserTask = (request, response) => {
     if (error) {
       throw error;
     }
-    response.status(201).send(`Task added with ID: ${results.rows[0].task_id}`);
+    response.status(201).send({"task_id": results.rows[0].task_id, "description": description, "complete": complete});
   })
 }
 
@@ -33,11 +33,12 @@ const updateTaskCompletion = (request, response) => {
   const task_id = parseInt(request.params.id);
   const { complete } = request.body;
 
-  pool.query('UPDATE tasks SET complete = $1 WHERE task_id = $2;', [complete, task_id], (error, results) => {
+  pool.query('UPDATE tasks SET complete = $1 WHERE task_id = $2 RETURNING *;', [complete, task_id], (error, results) => {
     if (error) {
       throw error;
     }
-    response.status(200).send(`Task updated with ID ${task_id} to completion ${complete}`);
+
+    response.status(200).send(results.rows[0]);
   })
 }
 

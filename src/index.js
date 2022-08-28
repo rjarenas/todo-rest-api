@@ -29,7 +29,7 @@ app.patch('/tasks/:id', tasks.updateTaskCompletion);
 app.delete('/tasks/:id', tasks.deleteTask);
 
 //User entry points
-app.get('/users/:id', users.getUserName);
+app.get('/users/:id', users.getUser);
 
 app.listen(port, () => {
   console.log(`Todo Rest API running on port ${port}.`);
