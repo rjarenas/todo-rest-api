@@ -6,7 +6,8 @@ const pool = new Pool(DATABASE_CONNECTION);
 const getUserTasks = (request, response) => {
   const user_id = parseInt(request.params.id);
 
-  pool.query('SELECT b.* FROM users a LEFT JOIN tasks b ON b.task_id = ANY(a.tasks) WHERE a.user_id = $1;',[user_id], (error, results) => {
+  pool.query('SELECT b.* FROM users a LEFT JOIN tasks b ON b.task_id = ANY(a.tasks) WHERE a.user_id = $1 ORDER BY task_id ASC;',
+    [user_id], (error, results) => {
     if(error) {
       throw error;
     }
