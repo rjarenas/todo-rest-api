@@ -27,6 +27,7 @@ app.get('/user/:id/tasks', tasks.getUserTasks);
 app.post('/user/:id/tasks', tasks.createUserTask);
 app.patch('/tasks/:id', tasks.updateTaskCompletion);
 app.delete('/tasks/:id', tasks.deleteTask);
+app.delete('/tasks', tasks.deleteCompletedTasks);
 
 //User entry points
 app.get('/users/:id', users.getUser);

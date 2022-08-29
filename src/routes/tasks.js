@@ -3,6 +3,23 @@ const { DATABASE_CONNECTION  } = require('../database-connection');
 
 const pool = new Pool(DATABASE_CONNECTION);
 
+const deleteCompletedTasks = (request, response) => {
+  pool.query(`with removed_tasks as (DELETE FROM tasks WHERE complete = true RETURNING task_id)
+    UPDATE users SET tasks = (SELECT array_agg(elem2) FROM removed_tasks, unnest(tasks) elem2 WHERE elem2 <> any(SELECT task_id FROM removed_tasks)) 
+    RETURNING (SELECT task_id FROM removed_tasks);`,  (error, results) => {
+    if (error) {
+      throw error;
+    }
+
+    if (results.rows == null) {
+      response.status(200).send(`No tasks to delete.`);
+    }
+    else {
+      response.status(200).send(`Deleted completed tasks.`);
+    }
+  });
+}
+
 const getUserTasks = (request, response) => {
   const user_id = parseInt(request.params.id);
 
@@ -64,5 +81,6 @@ module.exports = {
   getUserTasks,
   createUserTask,
   updateTaskCompletion,
-  deleteTask
+  deleteTask,
+  deleteCompletedTasks
 }
